@@ -119,10 +119,10 @@ class Manage:
 
         for k, v in self.model_cls._fields.items():
             if isinstance(v, Field):
-                command += '\'' + str(kw[k]) + '\', '
-        command = command[:-2]
-        command += ')'
-        cursor.execute(command)
+                command += '?, '
+        command = command[:-2] + ')'
+        cursor.execute(command, [kw[k] for k, v in self.model_cls._fields.items() if isinstance(v, Field)])
+
         conn.commit()
 
     def all(self):
@@ -135,21 +135,6 @@ class Manage:
 
     def filter(self, **kwargs):
         return QuerySet(self.model_cls, **kwargs)
-
-
-class DoesNotExistDescritor:
-    exceptions = {}
-
-    def __init__(self):
-        pass
-
-    def __get__(self, instance, mdl_cls):
-        if mdl_cls in exceptions:
-            return exceptions[mdl_cls]
-        else:
-            cls = type('DoesNotExist', Exception, {'model': mdl_cls})
-            exceptions[mdl_cls] = cls
-            return cls
 
 
 class Model(metaclass=ModelMeta):
