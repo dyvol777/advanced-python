@@ -18,15 +18,13 @@ class Man(User):
 def _main():
     user = User(name='name', id=1)
     user.save()
-    User.objects.create(id=1, name='name')
-    User.objects.update(id=1)
-    User.objects.delete(id=1)
-    try:
-        pass
-    except User.dne as identifier:
-        pass
+    user.id = 2
+    user.save()
 
-    for i in User.objects.filter(id=2).filter(name__gt='petya').get():
+    user = User(name='name2', id=3)
+    user.delete()
+
+    for i in User.objects.filter(id=2).get():
         i.update()
 
 

@@ -46,32 +46,47 @@ class ModelMeta(type):
         conn = sqlite3.connect("newDB.db")  # или :memory: чтобы сохранить в RAM
         cursor = conn.cursor()
         # Создание таблицы
-        comand = f"create table if not exists {meta.table_name}("
+        command = f"create table if not exists {meta.table_name}("
         for k, v in fields.items():
             if isinstance(v, StringField):
-                comand += f'{k} text,'
+                command += f'{k} text'
             elif isinstance(v, IntField):
-                comand += f'{k} integer,'
-        comand += 'row_id integer PRIMARY KEY)'
+                command += f'{k} integer '
+            if v.required:
+                command += 'not null'
+            if v.default is not None:
+                command += f'default=\'{v.default}\','
+            command += ', '
+        command += 'row_id integer PRIMARY KEY)'
 
-        cursor.execute(comand.lower())
+        cursor.execute(command.lower())
 
         return super().__new__(mcs, name, bases, namespace)
 
 
 class QuerySet:
-    def __init__(self, model_cls, conditions):
+    def __init__(self, model_cls, **conditions):
         self.model = model_cls
         self.conditions = conditions
 
     def get(self):
-        q = f'select * from {self.model.table} where '
-
-        res = conn.execute(q)
+        conn = sqlite3.connect("newDB.db")
+        cursor = conn.cursor()
+        command = f'select * from {self.model._table_name} where '
+        for k, v in self.conditions.items():
+            command += k + ' = \'' + str(v) + '\' and '
+        command = command[:-5]
+        res = cursor.execute(command).fetchall()
         return [self.model(**item) for item in res]
 
-    def filter(self):
-        #modify cond
+    def filter(self, **kwargs):
+        self.conditions.update(kwargs)
+        return self
+
+    def delete(self):
+        pass
+
+    def update(self):
         pass
 
 
@@ -105,38 +120,19 @@ class Manage:
     def all(self):
         conn = sqlite3.connect("newDB.db")
         cursor = conn.cursor()
-        command = f'INSERT INTO {self.model_cls._table_name}('
-        for k, v in self.model_cls._fields.items():
-            if isinstance(v, Field):
-                command += k + ', '
+        command = f'select * from  {self.model_cls._table_name}'
+        res = cursor.execute(command)
+        return [self.model_cls(**item) for item in res]
 
-        command = command[:-2] + ') VALUES ('
-
-        for k, v in self.model_cls._fields.items():
-            if isinstance(v, Field):
-                command += '\'' + str(kw[k]) + '\', '
-        command = command[:-2]
-        command += ')'
-        cursor.execute(command)
-
-    def get(self):
-        pass
-
-    def update(self):
-        pass
-
-    def delete(self):
-        pass 
-
-    def filter(self, **q):
-        return QuerySet(self.model_cls, **q)
+    def filter(self, **kwargs):
+        return QuerySet(self.model_cls, **kwargs)
 
 
-class DoesNotExistDescrt:
+class DoesNotExistDescritor:
     exceptions = {}
 
-    def __init__(self, text):
-        self.txt = text
+    def __init__(self):
+        pass
 
     def __get__(self, instance, mdl_cls):
         if mdl_cls in exceptions:
@@ -149,6 +145,7 @@ class DoesNotExistDescrt:
 
 class Model(metaclass=ModelMeta):
     _fields = {}
+    _table_name = ''
 
     class Meta:
         table_name = ''
@@ -156,22 +153,50 @@ class Model(metaclass=ModelMeta):
     objects = Manage()
 
     # todo DoesNotExist
-    DoesNotExist = DoesNotExistDescrt('1')
+    # DoesNotExist = DoesNotExistDescrt('1')
 
     def __init__(self, *_, **kwargs):
         for field_name, field in self._fields.items():
             value = field.validate(kwargs.get(field_name))
             setattr(self, field_name, value)
-        self._fields['primary_key'] = None
+        if 'row_id' in kwargs.keys():
+            self.row_id = kwargs['row_id']
+        else:
+            self.row_id = None
 
     def save(self):
-        if self._fields['primary_key'] is None:
-            pass
+        conn = sqlite3.connect("newDB.db")
+        cursor = conn.cursor()
+        if self.row_id is None:
+
+            command = f'INSERT INTO {self._table_name}('
+            for k, v in self._fields.items():
+                if isinstance(v, Field):
+                    command += k + ', '
+
+            command = command[:-2] + ') VALUES ('
+
+            for k, v in self._fields.items():
+                if isinstance(v, Field):
+                    command += '\'' + str(getattr(self, k)) + '\', '
+            command = command[:-2]
+            command += ')'
         else:
-            pass
+            command = f' UPDATE {self._table_name} SET '
+            for k in self._fields.keys():
+                command += k + ' = \'' + str(getattr(self, k)) + '\', '
+            command = command[:-2] + ' where row_id = \'' + str(self.row_id) + '\''
+        res = cursor.execute(command)
+        if self.row_id is None:
+            self.row_id = res.lastrowid
+        conn.commit()
 
     def delete(self):
-        if self._fields['primary_key'] is None:
+        if self.row_id is None:
             del self
         else:
-            pass
+            conn = sqlite3.connect("newDB.db")
+            cursor = conn.cursor()
+            command = f"DELETE FROM {self._table_name} WHERE row_id = {self.row_id}"
+            cursor.execute(command)
+            conn.commit()
