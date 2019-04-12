@@ -57,7 +57,7 @@ class ModelMeta(type):
             if v.default is not None:
                 command += f'default=\'{v.default}\','
             command += ', '
-        command += 'row_id integer PRIMARY KEY)'
+        command += 'raw_id integer PRIMARY KEY)'
 
         cursor.execute(command.lower())
 
@@ -71,6 +71,7 @@ class QuerySet:
 
     def get(self):
         conn = sqlite3.connect("newDB.db")
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         command = f'select * from {self.model._table_name} where '
         for k, v in self.conditions.items():
@@ -84,7 +85,14 @@ class QuerySet:
         return self
 
     def delete(self):
-        pass
+        conn = sqlite3.connect("newDB.db")
+        cursor = conn.cursor()
+        command = f'delete from {self.model._table_name} where '
+        for k, v in self.conditions.items():
+            command += k + ' = \'' + str(v) + '\' and '
+        command = command[:-5]
+        cursor.execute(command)
+        conn.commit()
 
     def update(self):
         pass
@@ -119,6 +127,7 @@ class Manage:
 
     def all(self):
         conn = sqlite3.connect("newDB.db")
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         command = f'select * from  {self.model_cls._table_name}'
         res = cursor.execute(command)
@@ -159,15 +168,15 @@ class Model(metaclass=ModelMeta):
         for field_name, field in self._fields.items():
             value = field.validate(kwargs.get(field_name))
             setattr(self, field_name, value)
-        if 'row_id' in kwargs.keys():
-            self.row_id = kwargs['row_id']
+        if 'raw_id' in kwargs.keys():
+            self.raw_id = kwargs['raw_id']
         else:
-            self.row_id = None
+            self.raw_id = None
 
     def save(self):
         conn = sqlite3.connect("newDB.db")
         cursor = conn.cursor()
-        if self.row_id is None:
+        if self.raw_id is None:
 
             command = f'INSERT INTO {self._table_name}('
             for k, v in self._fields.items():
@@ -185,18 +194,18 @@ class Model(metaclass=ModelMeta):
             command = f' UPDATE {self._table_name} SET '
             for k in self._fields.keys():
                 command += k + ' = \'' + str(getattr(self, k)) + '\', '
-            command = command[:-2] + ' where row_id = \'' + str(self.row_id) + '\''
+            command = command[:-2] + ' where raw_id = \'' + str(self.raw_id) + '\''
         res = cursor.execute(command)
-        if self.row_id is None:
-            self.row_id = res.lastrowid
+        if self.raw_id is None:
+            self.raw_id = res.lastrowid
         conn.commit()
 
     def delete(self):
-        if self.row_id is None:
+        if self.raw_id is None:
             del self
         else:
             conn = sqlite3.connect("newDB.db")
             cursor = conn.cursor()
-            command = f"DELETE FROM {self._table_name} WHERE row_id = {self.row_id}"
+            command = f"DELETE FROM {self._table_name} WHERE raw_id = {self.raw_id}"
             cursor.execute(command)
             conn.commit()

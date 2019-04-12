@@ -12,6 +12,7 @@ class User(Model):
 class Man(User):
     class Meta:
         table_name = 'man'
+
     sex = StringField()
 
 
@@ -20,12 +21,31 @@ def _main():
     user.save()
     user.id = 2
     user.save()
-
-    user = User(name='name2', id=3)
     user.delete()
 
-    for i in User.objects.filter(id=2).get():
-        i.update()
+    user = User(name='name2', id=2)
+    user.delete()
+
+    Man.objects.create(name='name1', id=1, sex='m')
+    Man.objects.create(name='name2', id=2, sex='w')
+    Man.objects.create(name='name3', id=3, sex='m')
+
+    people = Man.objects.all()
+
+    men = Man.objects.filter(sex='m').get()
+
+    usver = Man.objects.filter(sex='m').filter(id=1).get()
+
+    for us in men:
+        us.sex = 'man'
+        us.save()
+
+
+
+
+    print('allok!')
+
+
 
 
 if __name__ == "__main__":
