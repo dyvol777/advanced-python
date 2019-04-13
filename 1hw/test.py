@@ -40,12 +40,7 @@ def _main():
         us.sex = 'man'
         us.save()
 
-
-
-
     print('allok!')
-
-
 
 
 if __name__ == "__main__":
