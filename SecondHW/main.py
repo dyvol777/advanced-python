@@ -1,8 +1,8 @@
-from processor import *
+from SecondHW.processor import *
 
 
 def _main():
-    pass
+    generate()
 
 
 if __name__ == "__main__":
