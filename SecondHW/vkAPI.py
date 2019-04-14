@@ -9,7 +9,10 @@ ver = 5.95
 def postIMG():
     method = 'photos.getMessagesUploadServer'
     param = '1'
-    q = temp.format(method=method, param=param, token=token, ver=ver)
+    q = temp.format(method=method,
+                    param=param,
+                    token=token,
+                    ver=ver)
     r = requests.get(q)
     ans = r.json()
 
@@ -17,12 +20,16 @@ def postIMG():
     ans = r.json()
 
     method = 'photos.saveMessagesPhoto' # +server, photo, hash
-    q = temp.format(method=method, param=param, token=token, ver=ver)
+    q = temp.format(method=method,
+                    param=f"""server={ans['server']}&photo={ans['photo']}&hash={ans['hash']}""",
+                    token=token,
+                    ver=ver)
     r = requests.get(q)
     ans = r.json()
 
     method = 'messages.send'
-    ### attachment медиавложения к личному сообщению, перечисленные через запятую.Каждое прикрепление представлено в формате: typeowner_id_media_id
+    # attachment медиавложения к личному сообщению, перечисленные через запятую.Каждое прикрепление представлено в
+    # формате: typeowner_id_media_id
 
 
 if __name__ == '__main__':
