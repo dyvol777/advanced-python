@@ -1,9 +1,11 @@
+import time
+
 import imgkit
 import qrcode
 import base64
 
 
-def generate():
+def generate(q, i):
     qr = qrcode.QRCode(
         version=2,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -11,7 +13,7 @@ def generate():
         border=4,
     )
 
-    qr.add_data('Some data')
+    qr.add_data(i)
     qr.make(fit=True)
 
     img = qr.make_image(fill_color="black", back_color="white")
@@ -27,3 +29,4 @@ def generate():
     path_wkthmltoimage = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltoimage.exe'
     config = imgkit.config(wkhtmltoimage=path_wkthmltoimage)
     imgkit.from_string(html, 'out.jpg', config=config)
+    q.put(time.time())
