@@ -3,11 +3,6 @@ from SecondHW.vkAPI import *
 import multiprocessing as mp
 
 
-def Generate():
-    for val in range(1000):
-        yield val
-
-
 def _main():
     with mp.Pool(10) as pool:
         for i in pool.imap_unordered(generate, range(10)):
