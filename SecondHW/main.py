@@ -1,4 +1,5 @@
 from SecondHW.processor import *
+from SecondHW.vkAPI import *
 import multiprocessing as mp
 
 
@@ -8,15 +9,12 @@ def Generate():
 
 
 def _main():
-    m = mp.Manager()
-    q = m.Queue()
-    # m.set_start_method('fork')
-
     with mp.Pool(10) as pool:
-        pool.apply_async(generate, (q, i))
-            print(q.get(block=True))
+        for i in pool.imap_unordered(generate, range(10)):
+            postIMG(i)
         pool.close()
         pool.join()
+    print('all ok!')
     
 
 if __name__ == "__main__":
