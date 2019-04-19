@@ -1,4 +1,4 @@
-from FirstHW.orm import *
+from FirstHW.model import *
 
 
 class User(Model):
@@ -13,7 +13,7 @@ class Man(User):
     class Meta:
         table_name = 'man'
 
-    sex = StringField()
+    sex = StringField(False, 'Null')
 
 
 def _main():
@@ -26,7 +26,7 @@ def _main():
     user = User(name='name2', id=2)
     user.delete()
 
-    Man.objects.create(name='name1', id=1, sex='m')
+    Man.objects.create(name='name1', id=1)
     Man.objects.create(name='name2', id=2, sex='w')
     Man.objects.create(name='name3', id=3, sex='m')
 
