@@ -1,9 +1,10 @@
+import io
 import random
-
+import image
 import requests
 
 url = 'https://api.vk.com/method/'
-token = '2eb84bfe03f4e9390ddca83932d7d2d0c86c96066f59a4e4c92930e183b5f46fb5dcbd9376bf8b81f6248'  # todo remove from vk
+token = '5ea99a818d2c7c94c5a29ed20a5be0c8f229f4ab4855e9e6157ff5fee15d2a28e0ed2bbd42f308d813b62'  # todo remove from vk
 ver = 5.95
 
 
@@ -36,7 +37,7 @@ def postIMG(ar):
                      params=param)
     ans = r.json()
 
-    param = dict(user_id='15524226',
+    param = dict(user_id='63460525',
                  random_id=random.randint(10000, 1000000000000),
                  message=f'Купон {num}',
                  attachment='photo' + str(ans['response'][0]['owner_id']) + '_' + str(ans['response'][0]['id']),
@@ -45,6 +46,7 @@ def postIMG(ar):
     method = 'messages.send'
     r = requests.get(url + method,
                      params=param)
+    assert r.ok is True
     ans = r.json()
 
     # attachment медиавложения к личному сообщению, перечисленные через запятую.Каждое прикрепление представлено в

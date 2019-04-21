@@ -16,17 +16,17 @@ class Manage:
         cursor = conn.cursor()
         command = f'INSERT INTO {self.model_cls._table_name}('
         for k, v in kw.items():
-            if isinstance(getattr(self.model_cls, k), Field):
+            if isinstance(self.model_cls._fields[k], Field):
                 command += k + ', '
 
         command = command[:-2] + ') VALUES ('
 
         for k, v in kw.items():
-            if isinstance(getattr(self.model_cls, k), Field):
+            if isinstance(self.model_cls._fields[k], Field):
                 command += '?, '
         command = command[:-2] + ')'
-        cursor.execute(command, [v for k, v in self.model_cls._fields.items()
-                                 if isinstance(getattr(self.model_cls, k), Field)])
+        cursor.execute(command, [v for k, v in kw.items()
+                                 if isinstance(self.model_cls._fields[k], Field)])
 
         conn.commit()
 

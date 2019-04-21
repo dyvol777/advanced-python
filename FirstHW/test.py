@@ -13,7 +13,7 @@ class Man(User):
     class Meta:
         table_name = 'man'
 
-    sex = StringField(False, 'Null')
+    sex = StringField(False, 'm')
 
 
 def _main():

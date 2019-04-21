@@ -33,8 +33,7 @@ def generate(i=0):
     path_wkthmltoimage = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltoimage.exe'
     config = imgkit.config(wkhtmltoimage=path_wkthmltoimage)
     img = imgkit.from_string(html, False, config=config)
-
-    time.sleep(5)
+    # time.sleep(5)
     print(str(i) + ' finished!')
     return [img, i]
 

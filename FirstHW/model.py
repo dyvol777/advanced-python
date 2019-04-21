@@ -28,13 +28,13 @@ class ModelMeta(type):
         command = f"create table if not exists {meta.table_name}("
         for k, v in fields.items():
             if isinstance(v, StringField):
-                command += f'{k} text'
+                command += f'{k} text '
             elif isinstance(v, IntField):
                 command += f'{k} integer '
             if v.required:
-                command += 'not null'
+                command += 'not null '
             if v.default is not None:
-                command += f'default=\'{v.default}\','
+                command += f'default \'{v.default}\''
             command += ', '
         command += 'raw_id integer PRIMARY KEY)'
 
@@ -42,7 +42,7 @@ class ModelMeta(type):
 
         conn.row_factory = sqlite3.Row
         namespace['_conn'] = conn
-
+        namespace['raw_id'] = IntField()
         return super().__new__(mcs, name, bases, namespace)
 
 
@@ -61,6 +61,7 @@ class Model(metaclass=ModelMeta):
 
     def __init__(self, *_, **kwargs):
         for field_name, field in kwargs.items():
+            print
             value = getattr(self, field_name).validate(field)
             setattr(self, field_name, value)
         if 'raw_id' in kwargs.keys():
