@@ -8,7 +8,7 @@ token = '5ea99a818d2c7c94c5a29ed20a5be0c8f229f4ab4855e9e6157ff5fee15d2a28e0ed2bb
 ver = 5.95
 
 
-def postIMG(ar):
+def post_img(ar):
     img = ar[0]
     num = ar[1]
 
